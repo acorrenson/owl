@@ -1,4 +1,6 @@
 
 (library
   (name owl_core)
-  (modules core))
+  (modules core language)
+  (preprocess (pps ppx_variants_conv))
+  (libraries nacc))
