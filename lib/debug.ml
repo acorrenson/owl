@@ -1,18 +1,25 @@
 open Owl_core.Core
+open Owl_core.Language
+open Libnacc.Parsing
 
-let data1 = Know (ref 0, Fun ("loves", [Fun ("A", []); Fun ("B", [])]))
-let data2 = Know (ref 0, Fun ("loves", [Fun ("B", []); Fun ("C", [])]))
+let (let*) = Option.bind
 
-(* let data2 = Know (Fun ("loves", [Fun ("A", []); Fun ("C", [])])) *)
+let _ =
+  let* r1 = do_parse parse_stmt "f(?x, ?y) :- p(?x) p(?y)." in
+  let* r2 = do_parse parse_stmt "p(h)." in
+  let* r3 = do_parse parse_stmt "p(i)." in
+  let* r4 = do_parse parse_stmt "p(j)." in
+  let* q = do_parse parse_fun "f(?a, ?b)" in
+  let db = [r1; r2; r3; r4] in
+  let ll = solve_one q db in
+  Some (print_sols q ll)
 
-let data4 = Rule (ref 0, Fun ("loves", [Var "x"; Var "y"]), [Fun ("loves", [Var "y"; Var "x"])])
-
-let data5 = Rule (ref 0, Fun ("loves", [Var "p"; Var "q"]), [
-    Fun ("loves", [Var "p"; Var "r"]);
-    Fun ("loves", [Var "r"; Var "q"])
-  ])
-
-let db = [data1; data2; data5; data4]
-
-let qry = Fun ("loves", [Var "a"; Var "b"])
-(* let qry = Fun ("loves", [Fun ("A", []); Fun ("C", [])]) *)
+let _ =
+  let* r1 = do_parse parse_stmt "sm(z, ?y, ?y)." in
+  let* r2 = do_parse parse_stmt "sm(sc(?a), ?b, sc(?c)) :- sm(?a, ?b, ?c)." in
+  let* q1 = do_parse parse_fun "sm(sc(z), z, ?r)" in
+  let* q2 = do_parse parse_fun "sm(sc(z), sc(z), ?r)" in
+  let db = [r2; r1] in
+  let ll1 = solve_one q1 db in
+  let ll2 = solve_one q2 db in
+  Some (print_sols q1 ll1; print_sols q2 ll2)

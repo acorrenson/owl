@@ -62,9 +62,13 @@ let rename i t =
 let rec str_of_term t =
   match t with
   | Var x -> "?" ^ x
+  | FFun (f, []) -> f
   | FFun (f, args) -> f ^ "(" ^ (str_of_terms args) ^ ")"
 and str_of_terms lt =
-  List.fold_left (fun a t -> a ^ (str_of_term t) ^ " ") " " lt
+  match lt with
+  | [] -> ""
+  | x::[] -> str_of_term x
+  | x::tail ->  str_of_term x ^ ", " ^ (str_of_terms tail)
 
 let str_of_rule r =
   match r with
@@ -97,7 +101,7 @@ let rec solve_one qry rules =
         | Some s -> 
           let sl1 = solve (map (apply s) (map (rename !n) tl)) ((rev prev) @ tail) in
           let sl2 = step qry (r::prev) tail in
-          (List.map (fun x -> s @ x) sl1) @ sl2
+          (List.map (fun x -> x @ s) sl1) @ sl2
       end
     | (Know (n, t) as r)::tail ->
       incr n;
@@ -118,12 +122,9 @@ and solve qryl rules =
   | q::ql ->
     let open List in
     let sols = solve_one q rules in
-    map (fun s -> map (fun l -> s @ l) (solve (map (apply s) ql) rules)) sols
+    map (fun s -> map (fun l -> l @ s) (solve (map (apply s) ql) rules)) sols
     |> List.concat
 
 
 let print_sols qry sols =
   List.iter (fun t -> print_endline (str_of_term t)) (List.map (fun s -> apply s qry) sols)
-
-
-
