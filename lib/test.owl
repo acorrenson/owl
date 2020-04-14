@@ -1,3 +1,0 @@
-
-sum(zero, ?a, ?a).
-sum(succ(?b), ?c, succ(?d)) :- sum(?b, ?c, ?d).

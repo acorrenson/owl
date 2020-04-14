@@ -19,7 +19,7 @@ let apply_all s ltt = List.map (fun (x, y) -> apply s x, apply s y) ltt
 
 let rec unify_one t1 t2 =
   match t1, t2 with
-  | Var x, Var y -> Some [y, Var x]
+  | Var x, Var y -> Some [x, Var y]
   | Var x, FFun (f, args)
   | FFun (f, args), Var x ->
     (* TODO : free variable test should be recursive *)
@@ -68,7 +68,7 @@ and str_of_terms lt =
   match lt with
   | [] -> ""
   | x::[] -> str_of_term x
-  | x::tail ->  str_of_term x ^ ", " ^ (str_of_terms tail)
+  | x::tail -> str_of_term x ^ ", " ^ (str_of_terms tail)
 
 let str_of_rule r =
   match r with
@@ -94,8 +94,8 @@ let rec solve_one qry rules =
     | [] -> []
     | (Rule (n, t, tl) as r)::tail ->
       incr n;
-      if !n >= 5 then []
-      else begin
+      (* if !n >= 5 then [] else *)
+      begin
         match unify_one qry (rename !n t) with
         | None -> step qry (r::prev) tail
         | Some s -> 
@@ -105,8 +105,8 @@ let rec solve_one qry rules =
       end
     | (Know (n, t) as r)::tail ->
       incr n;
-      if !n >= 50 then []
-      else begin
+      (* if !n >= 50 then [] else  *)
+      begin
         match unify_one qry (rename !n t) with
         | None -> step qry (r::prev) tail
         | Some s ->

@@ -19,7 +19,7 @@ let _ =
   let* r2 = do_parse parse_stmt "sm(sc(?a), ?b, sc(?c)) :- sm(?a, ?b, ?c)." in
   let* q1 = do_parse parse_fun "sm(sc(z), z, ?r)" in
   let* q2 = do_parse parse_fun "sm(sc(z), sc(z), ?r)" in
-  let db = [r2; r1] in
+  let db = [r1; r2] in
   let ll1 = solve_one q1 db in
   let ll2 = solve_one q2 db in
   Some (print_sols q1 ll1; print_sols q2 ll2)
