@@ -45,8 +45,8 @@ let rec query qry db =
       [s] @ (query qry tail)
 
 type rule =
-  | Rule of int * term * term list
-  | Know of int * term
+  | Rule of (int ref) * term * term list
+  | Know of (int ref) * term
 
 let count = ref 0
 
@@ -68,7 +68,7 @@ and str_of_terms lt =
 let str_of_rule r =
   match r with
   | Rule (n, _, _)
-  | Know (n, _) -> string_of_int n
+  | Know (n, _) -> string_of_int !n
 let str_of_rules lr =
   List.fold_left (fun a t -> a ^ (str_of_rule t) ^ " ") " " lr
 
@@ -83,25 +83,27 @@ let str_of_substll ll =
 
 
 let rec solve_one qry rules =
+  let open List in
   let rec step qry prev nexts =
     match nexts with
     | [] -> []
     | (Rule (n, t, tl) as r)::tail ->
-      let t' = rename !count t in
-      let tl' = List.map (rename !count) tl in
-      incr count;
-      begin
-        match unify_one qry t' with
-        | None -> Printf.printf "rule %d fail, try next\n" n; step qry (r::prev) tail
-        | Some s -> Printf.printf "success, trying rule %d\n" n;
-          solve (List.map (apply s) tl') (prev @ tail)
+      incr n;
+      if !n >= 5 then []
+      else begin
+        match unify_one qry (rename !n t) with
+        | None -> step qry (r::prev) tail
+        | Some s -> 
+          let sl1 = solve (map (apply s) (map (rename !n) tl)) ((rev prev) @ tail) in
+          let sl2 = step qry (r::prev) tail in
+          (List.map ((@) s) sl1) @ sl2
       end
     | (Know (n, t) as r)::tail ->
-      let t' = rename !count t in
-      incr count;
-      begin
-        match unify_one qry t' with
-        | None -> Printf.printf "know %d fail, try next\n" n; step qry (r::prev) tail
+      incr n;
+      if !n >= 50 then []
+      else begin
+        match unify_one qry (rename !n t) with
+        | None -> step qry (r::prev) tail
         | Some s ->
           s::(step qry (r::prev) tail)
       end
