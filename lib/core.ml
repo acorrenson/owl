@@ -51,6 +51,7 @@ type rule =
   | Know of (int ref) * term
 [@@deriving variants]
 
+
 let rename i t =
   let rec step t =
     match t with
