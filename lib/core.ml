@@ -45,40 +45,82 @@ let rec query qry db =
       [s] @ (query qry tail)
 
 type rule =
-  | Rule of term * term list
-  | Know of term
+  | Rule of int * term * term list
+  | Know of int * term
+
+let count = ref 0
+
+let rename i t =
+  let rec step t =
+    match t with
+    | Var x -> Var (Printf.sprintf "%s_%d" x i)
+    | Fun (f, args) -> Fun (f, List.map step args)
+  in 
+  step t
+
+let rec str_of_term t =
+  match t with
+  | Var x -> "?" ^ x
+  | Fun (f, args) -> f ^ "(" ^ (str_of_terms args) ^ ")"
+and str_of_terms lt =
+  List.fold_left (fun a t -> a ^ (str_of_term t) ^ " ") " " lt
+
+let str_of_rule r =
+  match r with
+  | Rule (n, _, _)
+  | Know (n, _) -> string_of_int n
+let str_of_rules lr =
+  List.fold_left (fun a t -> a ^ (str_of_rule t) ^ " ") " " lr
+
+let str_of_subst (x, t) =
+  Printf.sprintf "?%s <- %s" x (str_of_term t)
+
+let str_of_substl l =
+  List.fold_left (fun a t -> a ^ (str_of_subst t) ^ " ") " " l
+
+let str_of_substll ll =
+  List.fold_left (fun a t -> a ^ (str_of_substl t) ^ " ") " " ll
+
 
 let rec solve_one qry rules =
   let rec step qry prev nexts =
     match nexts with
     | [] -> []
-    | (Rule (t, tl) as r)::tail ->
+    | (Rule (n, t, tl) as r)::tail ->
+      let t' = rename !count t in
+      let tl' = List.map (rename !count) tl in
+      incr count;
       begin
-        match unify_one qry t with
-        | None -> step qry (r::prev) tail
-        | Some s -> solve (List.map (apply s) tl) (prev @ tail)
+        match unify_one qry t' with
+        | None -> Printf.printf "rule %d fail, try next\n" n; step qry (r::prev) tail
+        | Some s -> Printf.printf "success, trying rule %d\n" n;
+          solve (List.map (apply s) tl') (prev @ tail)
       end
-    | (Know t as r)::tail ->
+    | (Know (n, t) as r)::tail ->
+      let t' = rename !count t in
+      incr count;
       begin
-        match unify_one qry t with
-        | None -> step qry (r::prev) tail
-        | Some s -> [s] @ (step qry (r::prev) tail)
+        match unify_one qry t' with
+        | None -> Printf.printf "know %d fail, try next\n" n; step qry (r::prev) tail
+        | Some s ->
+          s::(step qry (r::prev) tail)
       end
   in
   step qry [] rules
 
-and solve qryl rules : (string * term) list list =
+and solve qryl rules =
   match qryl with
-  | [] -> []
+  | [] ->
+    [[]]
   | q::ql ->
-    match solve_one q rules with
-    | [] -> []
-    | sols ->
-      List.map (fun s -> [s] @ (solve (List.map (apply s) ql) rules)) sols
-      |> List.concat
+    let open List in
+    let sols = solve_one q rules in
+    map (fun s -> map (fun l -> l @ s) (solve (map (apply s) ql) rules)) sols
+    |> List.concat
 
 
-
+let print_sols qry sols =
+  List.iter (fun t -> print_endline (str_of_term t)) (List.map (fun s -> apply s qry) sols)
 
 
 
