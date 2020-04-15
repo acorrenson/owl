@@ -1,3 +1,5 @@
-
 sum(z, ?x, ?x).
-sum(succ(?x), ?y, succ(?z)) :- sum(?x, ?y, ?z).
+sum(succ(?a), ?b, succ(?c)) :- sum(?a, ?b, ?c).
+
+likes(a, b).
+likes(b, c).
