@@ -1,0 +1,3 @@
+
+sum(z, ?x, ?x).
+sum(succ(?x), ?y, succ(?z)) :- sum(?x, ?y, ?z).

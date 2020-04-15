@@ -48,8 +48,21 @@ let parse_know =
 
 let parse_stmt = parse_rule <|> parse_know
 
-(* let parse_rule = rule (ref 0) <$> parse_fun <*> spaced (char ':' *> char '-') *> many (spaced parse_fun) <* char '.'
+let parse_prog = many (blanks *> parse_stmt <* blanks)
 
-   let parse_know = know (ref 0) <$> parse_fun <* char '.'
 
-   let parse_stmt = parse_rule <|> parse_know *)
+let string_of_ic ic =
+  let s = ref "" in
+  let ok = ref false in
+  while not !ok do
+    try s := !s ^ (input_line ic) ^ "\n"
+    with End_of_file -> ok := true;
+  done;
+  !s
+
+let parse_from_file f =
+  open_in f
+  |> string_of_ic
+  |> do_parse parse_prog
+
+let parse_command = do_parse parse_fun

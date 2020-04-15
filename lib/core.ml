@@ -106,7 +106,7 @@ let rec solve_one qry rules =
       end
     | (Know (n, t) as r)::tail ->
       incr n;
-      (* if !n >= 50 then [] else  *)
+      (* if !n >= 50 then [] else *)
       begin
         match unify_one qry (rename !n t) with
         | None -> step qry (r::prev) tail
