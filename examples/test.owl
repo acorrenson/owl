@@ -3,3 +3,8 @@ sum(s(?a), ?b, s(?c)) :- sum(?a, ?b, ?c).
 
 nat(z).
 nat(s(?x)) :- nat(?x).
+
+p(a).
+p(b).
+
+q(?x) :- p(?x).
