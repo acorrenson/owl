@@ -1,5 +1,5 @@
 sum(z, ?x, ?x).
-sum(succ(?a), ?b, succ(?c)) :- sum(?a, ?b, ?c).
+sum(s(?a), ?b, s(?c)) :- sum(?a, ?b, ?c).
 
-likes(a, b).
-likes(b, c).
+nat(z).
+nat(s(?x)) :- nat(?x).

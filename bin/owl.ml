@@ -1,18 +1,19 @@
-open Owl_core.Core
-open Owl_core.Language
+open Lib.Solver
+open Lib.Unification
+open Lib.Language
 
-let display_sols qry sols =
-  match sols with
-  | [] ->
+let display_sol qry sol =
+  match sol with
+  | None ->
     print_endline "no rules or knowledge matching this query"
-  | _ -> print_sols qry sols
+  | Some u -> str_of_term (apply_subst u qry) |> print_endline
 
 let repl db =
   try while true do
       print_string "λ "; flush stdout;
       let inp = read_line () in
       match parse_command inp with
-      | Some qry -> solve_one qry db |> display_sols qry
+      | Some qry -> solve qry db |> display_sol qry
       | None -> print_endline "!! invalid query !!"
     done
   with End_of_file -> print_endline "Bye !"; exit 0

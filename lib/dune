@@ -1,6 +1,8 @@
+(include_subdirs unqualified)
 
 (library
-  (name owl_core)
-  (modules core language)
-  (preprocess (pps ppx_variants_conv))
+  (name lib)
+  (public_name owl.lib)
+  (preprocess (pps ppx_variants_conv ppx_deriving.show))
+  (modules language unification solver)
   (libraries nacc))

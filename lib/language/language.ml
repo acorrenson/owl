@@ -1,7 +1,8 @@
 open Libnacc
 open Parsing
 open Parsers
-open Core
+open Unification
+open Solver
 
 let alpha = one_in "abcdefghijklmnopqrstuvwxyz_"
 let implode l = List.fold_left (^) "" (List.map (String.make 1) l)

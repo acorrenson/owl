@@ -1,5 +1,5 @@
 
 (executable
   (name owl)
-  (libraries owl_core)
+  (libraries lib)
   (modules owl))

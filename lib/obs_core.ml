@@ -90,31 +90,28 @@ let str_of_substll ll =
 
 let rec solve_one qry rules =
   let open List in
-  let rec step qry rules =
-    match rules with
-    | [] -> []
-    | (Rule (n, t, tl) as r)::tail ->
-      if !n >= 500 then [] else
-        begin
-          match unify_one qry (rename !n t) with
-          | None -> step qry (tail @ [r])
-          | Some s ->
-            incr n;
-            let sl1 = solve (map (apply s) (map (rename !n) tl)) (tail @ [r]) in
-            let sl2 = step qry (tail @ [r]) in
-            (List.map (fun x -> x @ s) sl1) @ sl2
-        end
-    | (Know (n, t) as r)::tail ->
-      if !n >= 500 then [] else
-        begin
-          match unify_one qry (rename !n t) with
-          | None -> step qry (tail @ [r])
-          | Some s ->
-            incr n;
-            s::(step qry (tail @ [r]))
-        end
-  in
-  step qry rules
+  match rules with
+  | [] -> []
+  | (Rule (n, t, tl) as r)::tail ->
+    if !n >= 500 then [] else
+      begin
+        match unify_one qry (rename !n t) with
+        | None -> solve_one qry (tail @ [r])
+        | Some s ->
+          incr n;
+          let sl1 = solve (map (apply s) (map (rename !n) tl)) (tail @ [r]) in
+          let sl2 = solve_one qry (tail @ [r]) in
+          (List.map (fun x -> x @ s) sl1) @ sl2
+      end
+  | (Know (n, t) as r)::tail ->
+    if !n >= 500 then [] else
+      begin
+        match unify_one qry (rename !n t) with
+        | None -> solve_one qry (tail @ [r])
+        | Some s ->
+          incr n;
+          s::(solve_one qry (tail @ [r]))
+      end
 
 and solve qryl rules =
   match qryl with
