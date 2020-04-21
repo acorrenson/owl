@@ -5,7 +5,7 @@ append(nil, ?x, cs(?x, nil)).
 append(cs(?head, ?tail), ?x, cs(?head, ?next)) :- append(?tail, ?x, ?next).
 
 reverse(nil, nil).
-reverse(cs(?head, ?tail), ?rev) :- reverse(?tail, ?revtail) append(?revtail, ?head, ?rev).
+reverse(cs(?head, ?tail), ?rev) :- append(?revtail, ?head, ?rev) & reverse(?tail, ?revtail).
 
 length(nil, z).
 length(cs(?x, ?l), s(?ll)) :- length(?l, ?ll).
@@ -15,7 +15,7 @@ high(?x, ?y) :- sum(?y, s(?z), ?x).
 
 insert(?x, nil, cs(?x, nil)).
 insert(?x, cs(?h, ?t), cs(?x, cs(?h, ?t))) :- less(?x, ?h).
-insert(?x, cs(?h, ?t), cs(?h, ?z)) :- high(?x, ?h) insert(?x, ?t, ?z).
+insert(?x, cs(?h, ?t), cs(?h, ?z)) :- high(?x, ?h) & insert(?x, ?t, ?z).
 
 sort(nil, nil).
-sort(cs(?h, ?t), ?s) :- sort(?t, ?ss) insert(?h, ?ss, ?s).
+sort(cs(?h, ?t), ?s) :- sort(?t, ?ss) & insert(?h, ?ss, ?s).

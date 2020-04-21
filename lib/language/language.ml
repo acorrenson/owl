@@ -32,6 +32,7 @@ let chainl op term =
 
 let one p = (fun x -> [x]) <$> p
 let sep = (spaced (char ',')) *> pure (@)
+let conj = (spaced (char '&')) *> pure (@)
 
 let parse_args =
   let rec rargs inp = inp --> chainl sep ~~rterm
@@ -44,7 +45,7 @@ let parse_fun =
   ffun <$> ident <*> parenthesized '(' parse_args ')'
 
 let parse_rule =
-  rule (ref 0) <$> parse_fun <*> spaced (char ':' *> char '-') *> many (spaced parse_fun) <* char '.'
+  rule (ref 0) <$> parse_fun <*> spaced (char ':' *> char '-') *> spaced (chainl conj (one parse_fun)) <* char '.'
 
 let parse_know =
   know (ref 0) <$> parse_fun <* char '.'
