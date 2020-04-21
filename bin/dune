@@ -1,0 +1,6 @@
+
+(executable
+  (public_name owl)
+  (name owl_cli)
+  (libraries lib)
+  (modules owl_cli))
