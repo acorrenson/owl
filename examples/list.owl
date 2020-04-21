@@ -1,0 +1,6 @@
+
+append(nil, ?x, cs(?x, nil)).
+append(cs(?head, ?tail), ?x, cs(?head, ?next)) :- append(?tail, ?x, ?next).
+
+reverse(nil, nil).
+reverse(cs(?head, ?tail), ?rev) :- reverse(?tail, ?revtail) append(?revtail, ?head, ?rev).

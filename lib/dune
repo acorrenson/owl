@@ -4,5 +4,5 @@
   (name lib)
   (public_name owl.lib)
   (preprocess (pps ppx_variants_conv ppx_deriving.show))
-  (modules language unification solver)
+  (modules language terms unification solver loger)
   (libraries nacc))

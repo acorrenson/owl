@@ -1,7 +1,4 @@
-type term =
-  | Var of string
-  | FFun of string * term list
-[@@deriving variants, show]
+open Terms
 
 (** Test if a variable is free in a term
     @param x the variable name

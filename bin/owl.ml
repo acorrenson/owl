@@ -1,6 +1,7 @@
 open Lib.Solver
 open Lib.Unification
 open Lib.Language
+open Lib.Loger
 
 let display_sol qry sol =
   match sol with

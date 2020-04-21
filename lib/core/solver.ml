@@ -1,11 +1,5 @@
+open Terms
 open Unification
-
-type rule =
-  | Rule of (int ref) * term * term list
-  | Know of (int ref) * term
-[@@deriving variants, show]
-
-type rules = rule list [@@deriving show]
 
 let rename i t =
   let rec step t =
@@ -15,33 +9,10 @@ let rename i t =
   in 
   step t
 
-let rec str_of_term t =
+let rec var_less t =
   match t with
-  | Var x -> "?" ^ x
-  | FFun (f, []) -> f
-  | FFun (f, args) -> f ^ "(" ^ (str_of_terms args) ^ ")"
-and str_of_terms lt =
-  match lt with
-  | [] -> ""
-  | x::[] -> str_of_term x
-  | x::tail -> str_of_term x ^ ", " ^ (str_of_terms tail)
-
-let str_of_rule r =
-  match r with
-  | Rule (n, _, _)
-  | Know (n, _) -> string_of_int !n
-let str_of_rules lr =
-  List.fold_left (fun a t -> a ^ (str_of_rule t) ^ " ") " " lr
-
-let str_of_subst (x, t) =
-  Printf.sprintf "?%s <- %s" x (str_of_term t)
-
-let str_of_substl l =
-  List.fold_left (fun a t -> a ^ (str_of_subst t) ^ " ") " " l
-
-let str_of_substll ll =
-  List.fold_left (fun a t -> a ^ (str_of_substl t) ^ " ") " " ll
-
+  | Var _ -> false
+  | FFun (_, args) -> List.for_all var_less args
 
 let solve qry db =
   let rec step qry rules =
@@ -71,7 +42,6 @@ let solve qry db =
   in
   step qry db
 
-
 let solve_all qry db =
   let open List in
 
@@ -95,8 +65,8 @@ let solve_all qry db =
       (match unify [apply_subst frame qry, rename !n t] with
        | None -> []
        | Some u ->
-         let conj = map (rename !n) lt |> map (apply_subst u) in
-         qeval_conjoin [compose u frame] conj)
+         let conj = map (fun x -> rename !n x |> apply_subst u) lt in
+         qeval_conjoin [compose frame u] conj)
 
   and qeval_conjoin frames qrys =
     match qrys with
