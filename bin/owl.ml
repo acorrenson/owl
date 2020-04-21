@@ -1,6 +1,7 @@
 open Lib.Solver
 open Lib.Unification
 open Lib.Language
+open Lib.Notations
 open Lib.Loger
 
 let display_sol qry sol =
@@ -14,7 +15,7 @@ let display_sol2 qry sols =
   | [] -> print_endline "no rules or knowledge matching this query"
   | _ ->
     List.iter
-      (fun u -> str_of_term (apply_subst u qry) |> print_endline) sols
+      (fun u -> str_of_term (apply_subst u qry |> pretty_notations) |> print_endline) sols
 
 let repl db =
   try while true do

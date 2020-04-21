@@ -2,10 +2,13 @@ open Libnacc
 open Parsing
 open Parsers
 open Terms
+open Notations
 
 let alpha = one_in "abcdefghijklmnopqrstuvwxyz_"
+let digit = one_in "0123456789"
 let implode l = List.fold_left (^) "" (List.map (String.make 1) l)
-let ident = implode <$> many alpha
+let ident = implode <$> some alpha
+let nat = (fun x -> implode x |> int_of_string |> nat_to_term) <$> some digit
 let variable = var <$> char '?' *> ident
 let constant = (fun i -> ffun i []) <$> ident
 
@@ -32,7 +35,7 @@ let sep = (spaced (char ',')) *> pure (@)
 
 let parse_args =
   let rec rargs inp = inp --> chainl sep ~~rterm
-  and rterm inp = inp --> ((one variable) <|> (one ~~rfun))
+  and rterm inp = inp --> ((one nat) <|> ((one variable) <|> (one ~~rfun)))
   and rfun inp = inp --> (ffun <$> ident <*> parenthesized '(' ~~rargs ')' <|> constant)
   in
   ~~rargs
