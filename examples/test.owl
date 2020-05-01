@@ -1,18 +1,8 @@
 sum(z, ?x, ?x).
 sum(s(?a), ?b, s(?c)) :- sum(?a, ?b, ?c).
 
+mul(z, ?x, z).
+mul(s(?a), ?b, ?c) :- sum(?b, ?d, ?c) & mul(?a, ?b, ?d).
+
 nateq(z, z).
 nateq(s(?x), s(?y)) :- nateq(?x, ?y).
-
-nat(z).
-nat(s(?x)) :- nat(?x).
-
-p(a).
-p(b).
-
-likes(a, b).
-likes(b, c).
-
-likes(?x, ?y) :- likes(?x, ?z) likes(?z, ?y).
-
-q(?x) :- p(?x).
