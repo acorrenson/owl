@@ -14,7 +14,7 @@ and str_of_terms lt =
 let str_of_rule r =
   match r with
   | Rule (n, _, _)
-  | Know (n, _) -> string_of_int !n
+  | Fact (n, _) -> string_of_int !n
 let str_of_rules lr =
   List.fold_left (fun a t -> a ^ (str_of_rule t) ^ " ") " " lr
 

@@ -1,22 +1,21 @@
 open Lib.Solver
+open Lib.Terms
 open Lib.Unification
 open Lib.Language
 open Lib.Notations
 open Lib.Loger
 open Libnacc.Parsing
 
-let display_sol qry sol =
-  match sol with
-  | None ->
-    print_endline "no rules or knowledge matching this query"
-  | Some u -> str_of_term (apply_subst u qry) |> print_endline
-
-let display_sol2 qry sols =
+let display_sols qry sols =
   match sols with
-  | [] -> print_endline "no rules or knowledge matching this query"
+  | [] ->
+    if no_vars qry then print_endline "false"
+    else print_endline "no rules or knowledge matching this query"
   | _ ->
-    List.iter
-      (fun u -> str_of_term (apply_subst u qry |> pretty_notations) |> print_endline) sols
+    if no_vars qry then print_endline "true"
+    else List.iter (fun u ->
+        str_of_term (apply_subst u qry |> pretty_notations)
+        |> print_endline) sols
 
 let repl db =
   try while true do
@@ -24,12 +23,10 @@ let repl db =
       let inp = read_line () in
       match parse_command inp with
       | Ok qry ->
-        (* solve qry db |> display_sol qry *)
-        solve_all qry db |> display_sol2 qry
+        solve qry db |> display_sols qry
       | Error e ->
         print_endline "!! invalid query !!";
         Libnacc.Parsing.report e
-
     done
   with End_of_file -> print_endline "Bye !"; exit 0
 
