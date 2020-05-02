@@ -3,6 +3,7 @@ open Lib.Unification
 open Lib.Language
 open Lib.Notations
 open Lib.Loger
+open Libnacc.Parsing
 
 let display_sol qry sol =
   match sol with
@@ -22,17 +23,22 @@ let repl db =
       print_string "λ "; flush stdout;
       let inp = read_line () in
       match parse_command inp with
-      | Some qry ->
+      | Ok qry ->
         (* solve qry db |> display_sol qry *)
         solve_all qry db |> display_sol2 qry
-      | None -> print_endline "!! invalid query !!"
+      | Error e ->
+        print_endline "!! invalid query !!";
+        Libnacc.Parsing.report e
+
     done
   with End_of_file -> print_endline "Bye !"; exit 0
 
 let () =
   match parse_from_file (Sys.argv.(1)) with
-  | Some db -> repl db
-  | None -> failwith "syntax error"
+  | Ok db -> repl db
+  | Error e ->
+    report e;
+    failwith "syntax error"
 
 
 

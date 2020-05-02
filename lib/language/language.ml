@@ -12,23 +12,23 @@ let nat = (fun x -> implode x |> int_of_string |> nat_to_term) <$> some digit
 let variable = var <$> char '?' *> ident
 let constant = (fun i -> ffun i []) <$> ident
 
-let ( let* ) p f =
-  let inner input =
+(* let ( let* ) p f =
+   let inner input =
     match input --> p with
     | None -> None
     | Some (v, r) -> r --> f v
-  in
-  ~~inner
+   in
+   ~~inner
 
-let chainl op term =
-  let rec loop v =
+   let chainl op term =
+   let rec loop v =
     (let* f = op in
      let* y = term in
      loop (f v y))
     <|> pure v
-  in
-  let* x = term in
-  loop x
+   in
+   let* x = term in
+   loop x *)
 
 let one p = (fun x -> [x]) <$> p
 let sep = (spaced (char ',')) *> pure (@)
