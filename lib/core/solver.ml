@@ -47,11 +47,7 @@ let solve (qry:query) db =
     qeval_qry (qeval_qry frames p) q
 
   and qeval_disjoin frames p q =
-    let sols_p = qeval_qry frames p in
-    let sols_q = qeval_qry frames q in
-    let sols_pq = qeval_qry sols_q p in
-    let sols_qp = qeval_qry sols_p q in
-    sols_pq <@> sols_qp
+    qeval_qry frames p <@> qeval_qry frames q
 
   in
 
