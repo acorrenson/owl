@@ -21,6 +21,11 @@ let rec apply_subst s t =
     | Some t' -> t'
     | None -> t
 
+let subst_eq s1 s2 =
+  let l1 = List.sort (fun a b -> compare (fst a) (fst b)) s1
+  and l2 = List.sort (fun a b -> compare (fst a) (fst b)) s2
+  in l1 = l2
+
 (** Compose a subsitution and a "one variable" substitution
     @param sub  a substitution
     @param asg  a "one variable" substitution *)

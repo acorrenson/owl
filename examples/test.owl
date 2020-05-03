@@ -6,3 +6,8 @@ mul(s(?a), ?b, ?c) :- sum(?b, ?d, ?c) & mul(?a, ?b, ?d).
 
 nateq(z, z).
 nateq(s(?x), s(?y)) :- nateq(?x, ?y).
+
+p(a).
+p(b).
+p(c).
+p(d).
