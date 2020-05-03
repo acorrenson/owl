@@ -45,11 +45,6 @@ let apply_equ sub (e1, e2) = apply_subst sub e1, apply_subst sub e2
     @param equs the system *)
 let apply_sys sub equs = List.map (apply_equ sub) equs
 
-(** { 2 - Warning !!!!} 
-
-    Substitutions are usually represented 
-*)
-
 type equs = (term * term ) list [@@deriving show]
 
 (** Resolve a system of term equations *)
