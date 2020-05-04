@@ -19,12 +19,26 @@ let rec map f s =
       Cons (f x, map f xs)
   end
 
+let rec iter f s =
+  match Lazy.force s with
+  | Nil -> ()
+  | Cons (x, xs) ->
+    f x; iter f xs
+
 let rec append s1 s2 =
   lazy begin
     match Lazy.force s1 with
     | Nil -> Lazy.force s2
     | Cons (x, xs) ->
       Cons (x, append xs s2)
+  end
+
+let rec append_delayed s1 s2 =
+  lazy begin
+    match Lazy.force s1 with
+    | Nil -> Lazy.force (Lazy.force s2)
+    | Cons (x, xs) ->
+      Cons (x, append_delayed xs s2)
   end
 
 let rec interleave s1 s2 =
@@ -57,6 +71,15 @@ let peek n s =
         step (i+1) (x::acc) xs 
   in
   let x, y = step 0 [] s in List.rev x, y
+
+let rec itern n f s =
+  if n = 0 then ()
+  else
+    match Lazy.force s with
+    | Nil -> ()
+    | Cons (x, xs) ->
+      f x;
+      itern (n-1) f xs
 
 let rec of_list l =
   match l with

@@ -70,9 +70,16 @@ val return : 'a -> 'a stream
     The actual computations are delayed *)
 val map : ('a -> 'b) -> 'a stream -> 'b stream
 
+val iter : ('a -> unit) -> 'a stream -> unit
+
 (** Concatenate two streams.
     Computations are delayed *)
 val append : 'a stream -> 'a stream -> 'a stream
+
+(** Same as {!append} except that
+    the definition of the second stream 
+    is itself delayed. *)
+val append_delayed : 'a stream -> 'a stream lazy_t -> 'a stream
 
 (** Concatenate two streams interleaving values.
     Using {!interleave} instead of {!append}
@@ -89,6 +96,8 @@ val flat_map : ('a -> 'b stream) -> 'a stream -> 'b stream
 (** Peek the first [n] elements of a stream returning them as a simple list.
     The tail of the stream is also returned *)
 val peek : int -> 'a stream -> ('a list * 'a stream)
+
+val itern : int -> ('a -> unit) -> 'a stream -> unit
 
 val of_list : 'a list -> 'a stream
 

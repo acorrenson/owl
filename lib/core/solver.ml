@@ -1,15 +1,33 @@
 open Terms
 open Unification
 
-let solve (qry:query) (db:rule Streams.stream) =
+let separate db =
+  let rec step (facts, rules) db =
+    match db with
+    | [] -> facts, rules
+    | (Rule _ as r)::tail -> step (facts, Streams.(append rules (return r))) tail
+    | (Fact _ as f)::tail -> step (Streams.(append facts (return f)), rules) tail
+  in
+  step (Streams.empty, Streams.empty) db
+
+
+let solve (qry:query) (db:rule list) =
   let count = ref 0 in
   let open List in
+  let (facts, rules) = separate db in
 
   let rec qeval frames tqry =
-    Streams.flat_map (find_rules tqry) frames
+    Streams.(
+      append_delayed
+        (flat_map (find_facts tqry) frames)
+        (lazy (flat_map (find_rules tqry) frames))
+    )
 
   and find_rules tqry frame =
-    Streams.flat_map (check_rule tqry frame) db
+    Streams.flat_map (check_rule tqry frame) rules
+
+  and find_facts tqry frame =
+    Streams.flat_map (check_rule tqry frame) facts
 
   and check_rule tqry frame rule =
     match rule with

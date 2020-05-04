@@ -5,7 +5,7 @@ append(nil, ?x, cs(?x, nil)).
 append(cs(?head, ?tail), ?x, cs(?head, ?next)) :- append(?tail, ?x, ?next).
 
 reverse(nil, nil).
-reverse(cs(?head, ?tail), ?rev) :- reverse(?tail, ?revtail) & append(?revtail, ?head, ?rev).
+reverse(cs(?head, ?tail), ?rev) :- append(?revtail, ?head, ?rev) & reverse(?tail, ?revtail).
 reverse_inv(?x, ?y) :- reverse(?y, ?x).
 
 reverse_acc(nil, ?acc, ?acc).
