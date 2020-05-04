@@ -84,11 +84,13 @@ val flat : 'a stream stream -> 'a stream
 
 (** Apply a stream constructor on each node of a stream while flattening the result.
     Every computations are delayed *)
-val flat_map : ('a -> 'b) -> 'a stream stream -> 'b stream
+val flat_map : ('a -> 'b stream) -> 'a stream -> 'b stream
 
 (** Peek the first [n] elements of a stream returning them as a simple list.
     The tail of the stream is also returned *)
-val peek : int -> 'a stream -> 'a list
+val peek : int -> 'a stream -> ('a list * 'a stream)
+
+val of_list : 'a list -> 'a stream
 
 (** {2 - Examples } *)
 

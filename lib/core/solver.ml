@@ -1,41 +1,30 @@
 open Terms
 open Unification
 
-let rec merge_sols s1 s2 =
-  match s1 with
-  | [] -> s2
-  | x::xs ->
-    if List.exists ((subst_eq) x) s2
-    then merge_sols xs s2
-    else x::(merge_sols xs s2)
-
-let (<@>) = merge_sols
-
-let solve (qry:query) db =
+let solve (qry:query) (db:rule Streams.stream) =
   let count = ref 0 in
   let open List in
+
   let rec qeval frames tqry =
-    map (find_rules tqry) frames
-    |> flatten
+    Streams.flat_map (find_rules tqry) frames
 
   and find_rules tqry frame =
-    map (check_rule tqry frame) db
-    |> flatten
+    Streams.flat_map (check_rule tqry frame) db
 
   and check_rule tqry frame rule =
     match rule with
     | Fact t ->
       incr count;
       (match unify [apply_subst frame tqry, rename_term !count t] with
-       | None -> []
-       | Some u -> [compose frame u])
+       | None -> Streams.empty
+       | Some u -> compose frame u |> Streams.return)
     | Rule (t, qry) ->
       incr count;
       (match unify [apply_subst frame tqry, rename_term !count t] with
-       | None -> []
+       | None -> Streams.empty
        | Some u ->
          let conds = map_qry (fun x -> rename_term !count x |> apply_subst u) qry in
-         qeval_qry [compose frame u] conds)
+         qeval_qry (compose frame u |> Streams.return) conds)
 
   and qeval_qry frames qry =
     match qry with
@@ -47,9 +36,9 @@ let solve (qry:query) db =
     qeval_qry (qeval_qry frames p) q
 
   and qeval_disjoin frames p q =
-    qeval_qry frames p <@> qeval_qry frames q
+    Streams.interleave (qeval_qry frames p) (qeval_qry frames q)
 
   in
 
-  qeval_qry [[]] qry
+  qeval_qry Streams.(return []) qry
 

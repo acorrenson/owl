@@ -58,6 +58,10 @@ let peek n s =
   in
   let x, y = step 0 [] s in List.rev x, y
 
+let rec of_list l =
+  match l with
+  | [] -> empty
+  | x::xs -> lazy (Cons (x, of_list xs))
 
 (** Examples *)
 
@@ -80,4 +84,4 @@ let odd =
   in
   lazy (step 1)
 
-let nat_= interleave even odd
+let nat = interleave even odd
