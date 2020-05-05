@@ -1,78 +1,62 @@
 open Terms
 open Unification
 
-let rename i t =
-  let rec step t =
-    match t with
-    | Var x -> Var (Printf.sprintf "%s_%d" x i)
-    | FFun (f, args) -> FFun (f, List.map step args)
-  in 
-  step t
-
-let rec var_less t =
-  match t with
-  | Var _ -> false
-  | FFun (_, args) -> List.for_all var_less args
-
-let solve qry db =
-  let rec step qry rules =
-    match rules with
-    | [] -> None
-    | Rule (n, t1, [t2])::tail ->
-      let t1' = rename !n t1 in
-      let t2' = rename !n t2 in
-      begin
-        match unify [qry, t1'] with
-        | None -> step qry tail
-        | Some u ->
-          incr n;
-          match step (apply_subst u t2') db with
-          | Some u1 -> Some (compose u u1)
-          | None -> None
-      end
-    | Know (n, t)::tail ->
-      let t' = rename !n t in
-      incr n;
-      begin
-        match unify [qry, t'] with
-        | None -> step qry tail
-        | u -> u
-      end
-    | _ -> assert false
+let separate db =
+  let rec step (facts, rules) db =
+    match db with
+    | [] -> facts, rules
+    | (Rule _ as r)::tail -> step (facts, Streams.(append rules (return r))) tail
+    | (Fact _ as f)::tail -> step (Streams.(append facts (return f)), rules) tail
   in
-  step qry db
+  step (Streams.empty, Streams.empty) db
 
-let solve_all qry db =
+
+let solve (qry:query) (db:rule list) =
+  let count = ref 0 in
   let open List in
+  let (facts, rules) = separate db in
 
-  let rec qeval frames qry =
-    map (find_rules qry) frames
-    |> flatten
+  let rec qeval frames tqry =
+    Streams.(
+      append_delayed
+        (flat_map (find_facts tqry) frames)
+        (lazy (flat_map (find_rules tqry) frames))
+    )
 
-  and find_rules qry frame =
-    map (check_rule qry frame) db
-    |> flatten
+  and find_rules tqry frame =
+    Streams.flat_map (check_rule tqry frame) rules
 
-  and check_rule qry frame rule =
+  and find_facts tqry frame =
+    Streams.flat_map (check_rule tqry frame) facts
+
+  and check_rule tqry frame rule =
     match rule with
-    | Know (n, t) ->
-      incr n;
-      (match unify [apply_subst frame qry, rename !n t] with
-       | None -> []
-       | Some u -> [compose frame u])
-    | Rule (n, t, lt) ->
-      incr n;
-      (match unify [apply_subst frame qry, rename !n t] with
-       | None -> []
+    | Fact t ->
+      incr count;
+      (match unify [apply_subst frame tqry, rename_term !count t] with
+       | None -> Streams.empty
+       | Some u -> compose frame u |> Streams.return)
+    | Rule (t, qry) ->
+      incr count;
+      (match unify [apply_subst frame tqry, rename_term !count t] with
+       | None -> Streams.empty
        | Some u ->
-         let conj = map (fun x -> rename !n x |> apply_subst u) lt in
-         qeval_conjoin [compose frame u] conj)
+         let conds = map_qry (fun x -> rename_term !count x |> apply_subst u) qry in
+         qeval_qry (compose frame u |> Streams.return) conds)
 
-  and qeval_conjoin frames qrys =
-    match qrys with
-    | [] -> frames
-    | q::ql -> qeval_conjoin (qeval frames q) ql
+  and qeval_qry frames qry =
+    match qry with
+    | Simple t -> qeval frames t
+    | Conj (p, q) -> qeval_conjoin frames p q
+    | Disj (p, q) -> qeval_disjoin frames p q
+
+  and qeval_conjoin frames p q =
+    qeval_qry (qeval_qry frames p) q
+
+  and qeval_disjoin frames p q =
+    Streams.interleave (qeval_qry frames p) (qeval_qry frames q)
+
   in
 
-  qeval [[]] qry
+  qeval_qry Streams.(return []) qry
 

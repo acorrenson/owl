@@ -5,68 +5,60 @@ open Terms
 open Notations
 
 let alpha = one_in "abcdefghijklmnopqrstuvwxyz_"
-let digit = one_in "0123456789"
-let implode l = List.fold_left (^) "" (List.map (String.make 1) l)
+let implode l = List.(fold_left (^) "" @@ map (String.make 1) l)
 let ident = implode <$> some alpha
-let nat = (fun x -> implode x |> int_of_string |> nat_to_term) <$> some digit
-let variable = var <$> char '?' *> ident
-let constant = (fun i -> ffun i []) <$> ident
 
-(* let ( let* ) p f =
-   let inner input =
-    match input --> p with
-    | None -> None
-    | Some (v, r) -> r --> f v
-   in
-   ~~inner
-
-   let chainl op term =
-   let rec loop v =
-    (let* f = op in
-     let* y = term in
-     loop (f v y))
-    <|> pure v
-   in
-   let* x = term in
-   loop x *)
+let parse_nat = nat_to_term <$> integer
+let parse_var = var <$> char '?' *> ident
+let parse_const = (fun i -> ffun i []) <$> ident
 
 let one p = (fun x -> [x]) <$> p
 let sep = (spaced (char ',')) *> pure (@)
-let conj = (spaced (char '&')) *> pure (@)
+
+let parse_conj = spaced (char '&') *> pure conj
+let parse_disj = spaced (char '|') *> pure disj
 
 let parse_args =
-  let rec rargs inp = inp --> chainl sep ~~rterm
-  and rterm inp = inp --> ((one nat) <|> ((one variable) <|> (one ~~rfun)))
-  and rfun inp = inp --> (ffun <$> ident <*> parenthesized '(' ~~rargs ')' <|> constant)
+  let rec rargs inp =
+    inp --> chainl sep ~~rterm
+  and rterm inp =
+    inp --> (one parse_nat <|> (one parse_var <|> one ~~rfun))
+  and rfun inp =
+    inp --> (ffun <$> ident <*> parenthesized '(' ~~rargs ')' <|> parse_const)
   in
   ~~rargs
 
 let parse_fun =
   ffun <$> ident <*> parenthesized '(' parse_args ')'
 
+let parse_qry =
+  let rec rdisj inp =
+    inp --> chainl parse_disj ~~rconj
+  and rconj inp =
+    inp --> chainl parse_conj ~~rsimple
+  and rsimple inp =
+    inp --> (simple <$> parse_fun <|> parenthesized '(' ~~rdisj ')')
+  in
+  ~~rdisj
+
 let parse_rule =
-  rule (ref 0) <$> parse_fun <*> spaced (char ':' *> char '-') *> spaced (chainl conj (one parse_fun)) <* char '.'
+  let op = spaced (char ':' *> char '-')
+  and qry = spaced @@ chainl parse_conj (simple <$> parse_fun)
+  in
+  rule <$> parse_fun <*> op *> qry <* char '.'
 
-let parse_know =
-  know (ref 0) <$> parse_fun <* char '.'
+let parse_fact =
+  fact <$> parse_fun <* char '.'
 
-let parse_stmt = parse_rule <|> parse_know
+let parse_stmt =
+  parse_rule <|> parse_fact
 
-let parse_prog = many (blanks *> parse_stmt <* blanks)
+let parse_prog =
+  many (blanks *> parse_stmt <* blanks)
 
+let read_qry =
+  do_parse parse_qry
 
-let string_of_ic ic =
-  let s = ref "" in
-  let ok = ref false in
-  while not !ok do
-    try s := !s ^ (input_line ic) ^ "\n"
-    with End_of_file -> ok := true;
-  done;
-  !s
+let read_from_file f =
+  do_parse_from_file parse_prog f
 
-let parse_from_file f =
-  open_in f
-  |> string_of_ic
-  |> do_parse parse_prog
-
-let parse_command = do_parse parse_fun

@@ -2,7 +2,7 @@
 
 # Owl
 
-Owl is a tiny logic programming language highly inspired by prolog. A version including a type sytem and an efficient indexing algorithm is in progress.
+Owl is a tiny logic programming language highly inspired by prolog. A version including a type system and a complete standard library is in progress.
 
 ## Installing and testing Owl
 
@@ -32,15 +32,16 @@ likes(?x, meat) :- carnivores(?x).
 ```
 *Notice that variables are introduced using a question mark*
 
-This rules could be traduced in first order logic as `forall x, carnivores(x) -> likes(x, meat)`.
+This rule could be traduced in first order logic as `forall x, carnivores(x) -> likes(x, meat)`.
 
-Rules can be more complex. We can express conjunctions by using the `&` operator :
+Rules can be more complex. We can express logical operators by using the symbols `&` or `|` :
 
 ```prolog
 green(?x) :- blue(?x) & yellow(?x).
+colored(?x) :- red(?x) | yellow(?x) | blue(?x).
 ```
 
-One can also express disjunctions by repeating several times a rule and modifying its right-hand side:
+Disjunctions can also be expressed by repeating several times a rule and modifying its right-hand side:
 
 ```prolog
 colored(?x) :- red(?x).
@@ -54,7 +55,7 @@ Owl comes with a special notation for natural numbers. They are defined in the s
 
 ### Asking the database
 
-Facts and rules should be defined inside a text file. The file can then be loaded using the command `owl path/to/file`. This will start an interactive session allowing to type queries. Notice that queries don't support the `&` operator. This feature will be added soon.
+Facts and rules should be defined inside a text file. The file can then be loaded using the command `owl path/to/file`. This will start an interactive session allowing to type queries.
 
 ## Examples
 
@@ -72,31 +73,34 @@ sum(1, 1, ?x).
 -> sum(1, 1, 2)
 ```
 
-We could also define data-structures such as lists in Owl :
+We can also define data-structures such as lists in Owl :
 
 ```prolog
 list(nil).
 list(cons(?head, ?tail)) :- list(?tail).
+```
 
+Here is a simple implementation of `append`. This implementation takes the form of a predicate defined recursively.
+
+```
 list_append(nil, ?x, cons(?x, nil)).
 list_append(cs(?head, ?tail), ?x, cs(?head, ?next)) :- list_append(?tail, ?x ?next).
-
-list_reverse(nil, nil).
-list_reverse(cons(?head, ?tail), ?rev) :- list_append(?rev_tail, ?head, ?rev) & list_reverse(?tail, ?rev_tail).
 ```
 
-To reverse a list, we can type the following query :
+To compute the result of appending an element to a list, we can type the following query :
 
 ```prolog
-list_reverse(cons(1, cons(2, cons(3, nil))), ?x)
+?- list_append(cons(1, cons(2, cons(3, nil))), 4, ?x)
+-> list_append(cons(1, cons(2, cons(3, nil))), 4, cons(1, cons(2, cons(3, cons(4, nil)))))
 ```
 
-We can also ask which list is gives another list once reversed :
+The beauty of logic programming is that we can also ask what parameters gives a specific result :
 
 ```prolog
-list_reverse(?x, cons(1, cons(2, cons(3, nil))))
+?- list_append(cons(1, ?x), ?y, cons(1, cons(2, cons(3, nil))))
+-> list_append(cons(1, cons(2, nil)), 3, cons(1, cons(2, cons(3, nil))))
 ```
 
 ## Warning
 
-The current implementation of the solver behind Owl is not guarantee to terminate against any query. Nevertheless, depending on the way programs are written, some infinite loops may be avoided. For example, in the `list_reverse` rule, swapping the order of the conjuncts in the right-hand side produces an infinite loop against the query `list_reverse(?x, cs(1, cs(2, nil)))`. The solver will first apply recursively the rule `list_reverse`, which will lead to another recursive application of the rule `list_reverse` and so on. By applying `list_append` first, the problem is solved.
+The current implementation of the solver behind Owl is not guarantee to terminate against any query. Nevertheless, some recent modifications have been done to reduce this limitation. There is work in progress to improve the solver and make it both powerful and reliable. In some cases, rewriting rules by changing the order of the conjuncts may prevent the solver to be stuck in infinite loops.

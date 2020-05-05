@@ -1,22 +1,23 @@
 open Terms
+open Printf
 
 let rec str_of_term t =
   match t with
-  | Var x -> "?" ^ x
+  | Var x -> sprintf "?%s" x
   | FFun (f, []) -> f
-  | FFun (f, args) -> f ^ "(" ^ (str_of_terms args) ^ ")"
+  | FFun (f, args) -> sprintf "%s(%s)" f (str_of_terms args)
 and str_of_terms lt =
   match lt with
   | [] -> ""
   | x::[] -> str_of_term x
-  | x::tail -> str_of_term x ^ ", " ^ (str_of_terms tail)
+  | x::xs -> sprintf "%s, %s" (str_of_term x) (str_of_terms xs)
 
-let str_of_rule r =
-  match r with
-  | Rule (n, _, _)
-  | Know (n, _) -> string_of_int !n
-let str_of_rules lr =
-  List.fold_left (fun a t -> a ^ (str_of_rule t) ^ " ") " " lr
+let rec str_of_qry q =
+  match q with
+  | Simple t -> str_of_term t
+  | Conj (p, q) -> sprintf "(%s & %s)" (str_of_qry p) (str_of_qry q)
+  | Disj (p, q) -> sprintf "(%s | %s)" (str_of_qry p) (str_of_qry q)
+
 
 let str_of_subst (x, t) =
   Printf.sprintf "?%s <- %s" x (str_of_term t)
