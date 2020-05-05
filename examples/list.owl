@@ -5,12 +5,11 @@ append(nil, ?x, cs(?x, nil)).
 append(cs(?head, ?tail), ?x, cs(?head, ?next)) :- append(?tail, ?x, ?next).
 
 reverse(nil, nil).
-reverse(cs(?head, ?tail), ?rev) :- append(?revtail, ?head, ?rev) & reverse(?tail, ?revtail).
+reverse(cs(?head, ?tail), ?rev) :-  reverse(?tail, ?revtail) & append(?revtail, ?head, ?rev).
 reverse_inv(?x, ?y) :- reverse(?y, ?x).
 
 reverse_acc(nil, ?acc, ?acc).
 reverse_acc(cs(?x, ?xs), ?z, ?acc) :- reverse_acc(?xs, ?z, cs(?x, ?acc)).
-
 
 length(nil, z).
 length(cs(?x, ?l), s(?ll)) :- length(?l, ?ll).

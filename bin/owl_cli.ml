@@ -45,7 +45,7 @@ let display_sols qry sols =
 
 let repl db =
   try while true do
-      print_string "λ "; flush stdout;
+      print_string "?- "; flush stdout;
       let inp = read_line () in
       match read_qry inp with
       | Ok qry ->
