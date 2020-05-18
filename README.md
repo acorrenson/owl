@@ -2,7 +2,7 @@
 
 # Owl
 
-Owl is a tiny logic programming language highly inspired by prolog. A version including a type system and a complete standard library is in progress.
+Owl is a tiny logic programming language highly inspired by prolog.
 
 ## Installing and testing Owl
 
@@ -32,9 +32,9 @@ likes(?x, meat) :- carnivores(?x).
 ```
 *Notice that variables are introduced using a question mark*
 
-This rule could be traduced in first order logic as `forall x, carnivores(x) -> likes(x, meat)`.
+This rule could be expressed in first order logic as `forall x, carnivores(x) -> likes(x, meat)`.
 
-Rules can be more complex. We can express logical operators by using the symbols `&` or `|` :
+We can express logical operators by using the symbols `&` or `|` :
 
 ```prolog
 green(?x) :- blue(?x) & yellow(?x).
@@ -82,7 +82,7 @@ list(cons(?head, ?tail)) :- list(?tail).
 
 Here is a simple implementation of `append`. This implementation takes the form of a predicate defined recursively.
 
-```
+```prolog
 list_append(nil, ?x, cons(?x, nil)).
 list_append(cs(?head, ?tail), ?x, cs(?head, ?next)) :- list_append(?tail, ?x ?next).
 ```
@@ -94,7 +94,7 @@ To compute the result of appending an element to a list, we can type the followi
 -> list_append(cons(1, cons(2, cons(3, nil))), 4, cons(1, cons(2, cons(3, cons(4, nil)))))
 ```
 
-The beauty of logic programming is that we can also ask what parameters gives a specific result :
+The beauty of logic programming is that we can also ask what parameters give a specific result :
 
 ```prolog
 ?- list_append(cons(1, ?x), ?y, cons(1, cons(2, cons(3, nil))))
@@ -103,4 +103,4 @@ The beauty of logic programming is that we can also ask what parameters gives a 
 
 ## Warning
 
-The current implementation of the solver behind Owl is not guarantee to terminate against any query. Nevertheless, some recent modifications have been done to reduce this limitation. There is work in progress to improve the solver and make it both powerful and reliable. In some cases, rewriting rules by changing the order of the conjuncts may prevent the solver to be stuck in infinite loops.
+The current implementation of the solver behind Owl is not guarantee to terminate against any query. Nevertheless, some recent modifications have been done to reduce this limitation. There is work in progress to improve the solver and make it both powerful and reliable. In some cases, rewriting rules by changing the order of the conjuncts may prevent the solver to be trapped in infinite loops.
