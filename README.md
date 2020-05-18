@@ -101,6 +101,8 @@ The beauty of logic programming is that we can also ask what parameters give a s
 -> list_append(cons(1, cons(2, nil)), 3, cons(1, cons(2, cons(3, nil))))
 ```
 
+The complete example including sorting functions is available in the [examples directory](https://github.com/jdrprod/owl/blob/master/examples/list.owl).
+
 ## Warning
 
 The current implementation of the solver behind Owl is not guarantee to terminate against any query. Nevertheless, some recent modifications have been done to reduce this limitation. There is work in progress to improve the solver and make it both powerful and reliable. In some cases, rewriting rules by changing the order of the conjuncts may prevent the solver to be trapped in infinite loops.
