@@ -1,4 +1,4 @@
-# Using lazy streams to implements a simple solver
+# Using lazy streams to implement a simple solver
 
 Logic programming is all about a compromise between the expressiveness of the language we expose and
 the capability for the so called solver to find answers in a reasonable time.
